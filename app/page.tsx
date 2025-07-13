@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShoppingCart, Camera, Bot, Volume2, Star, Zap, ArrowRight, Sparkles, Shield, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { LampContainer } from "@/components/ui/lamp"
+import { FlipWords } from "@/components/ui/flip-words";
 import { useApp } from '@/lib/context'
 import { motion } from 'framer-motion'
 
 export default function HomePage() {
   const { state } = useApp()
-
+ const words = ["better", "easy ", "beautiful", "modern"];
   const features = [
     {
       icon: <ShoppingCart className="h-8 w-8" />,
@@ -62,9 +64,13 @@ export default function HomePage() {
               AI-Powered Shopping Experience
             </div>
             <div className="text-6xl mb-4 animate-bounce">🛒</div>
-            <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-600 to-secondary bg-clip-text text-transparent leading-tight">
-              SmartMart
-            </h1>
+           <div className="h-[20rem] flex justify-center items-center px-4">
+      <div className="text-5xl mx-auto font-normal text-black dark:text-black">
+        Shopping made
+        <FlipWords words={words} /> <br />
+        with Smart Mart
+      </div>
+    </div>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
               The future of shopping is here. Experience AI-powered e-commerce with 
               <span className="font-semibold text-primary"> in-store detection</span>, 
@@ -290,3 +296,6 @@ export default function HomePage() {
     </div>
   )
 }
+// export default function Home() {
+//   return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+// }
