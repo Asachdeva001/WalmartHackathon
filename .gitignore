@@ -18,6 +18,7 @@ x
 # next.js
 /.next/
 /out/
+/Backend/venv
 
 # production
 /build

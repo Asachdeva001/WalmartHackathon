@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo } from 'react'
 import { ProductCard } from '@/components/ProductCard'
+import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Filter, Grid, List, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { Search, Grid, List, SlidersHorizontal, Sparkles } from 'lucide-react'
 import { sampleProducts, categories } from '@/lib/data'
 import { useApp } from '@/lib/context'
 import { motion } from 'framer-motion'
@@ -20,7 +21,6 @@ export default function ShopPage() {
   const filteredProducts = useMemo(() => {
     let products = sampleProducts
 
-    // Filter by search query
     if (searchQuery) {
       products = products.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -29,12 +29,10 @@ export default function ShopPage() {
       )
     }
 
-    // Filter by category
     if (selectedCategory !== 'All') {
       products = products.filter(product => product.category === selectedCategory)
     }
 
-    // Sort products
     products.sort((a, b) => {
       switch (sortBy) {
         case 'price':
@@ -64,7 +62,7 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div 
@@ -74,13 +72,13 @@ export default function ShopPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium text-primary">AI-Powered Shopping</span>
+            <Sparkles className="h-5 w-5 text-blue-600" />
+            <span className="text-sm font-medium text-blue-600">AI-Powered Shopping</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
             Discover Amazing Products
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl leading-relaxed">
             Explore our curated collection with AI-powered recommendations and intelligent search
           </p>
         </motion.div>
@@ -94,12 +92,12 @@ export default function ShopPage() {
         >
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Search products, categories, or tags..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-12 h-12 text-lg border-2 focus:border-primary transition-colors duration-200"
+                className="pl-12 h-12 text-lg border-2 border-blue-200 focus:border-blue-500 bg-white/80 backdrop-blur-sm transition-colors duration-200"
               />
             </div>
             <div className="flex gap-2">
@@ -107,7 +105,7 @@ export default function ShopPage() {
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="icon"
                 onClick={() => setViewMode('grid')}
-                className="h-12 w-12"
+                className="h-12 w-12 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Grid className="h-5 w-5" />
               </Button>
@@ -115,14 +113,14 @@ export default function ShopPage() {
                 variant={viewMode === 'list' ? 'default' : 'outline'}
                 size="icon"
                 onClick={() => setViewMode('list')}
-                className="h-12 w-12"
+                className="h-12 w-12 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <List className="h-5 w-5" />
               </Button>
               <Button
                 variant={showFilters ? 'default' : 'outline'}
                 onClick={() => setShowFilters(!showFilters)}
-                className="h-12 px-4"
+                className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <SlidersHorizontal className="h-5 w-5 mr-2" />
                 Filters
@@ -136,7 +134,7 @@ export default function ShopPage() {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="space-y-4 pt-4 border-t">
+            <div className="space-y-4 pt-4 border-t border-blue-200">
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <Button
@@ -144,7 +142,10 @@ export default function ShopPage() {
                     variant={selectedCategory === category ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
-                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                    className={`${selectedCategory === category 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                      : 'border-blue-200 text-blue-600 hover:bg-blue-50'
+                    } transition-all duration-200`}
                   >
                     {category}
                   </Button>
@@ -152,11 +153,11 @@ export default function ShopPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium">Sort by:</span>
+                <span className="text-sm font-medium text-gray-700">Sort by:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'rating')}
-                  className="px-4 py-2 border rounded-lg text-sm focus:border-primary transition-colors duration-200 bg-background"
+                  className="px-4 py-2 border border-blue-200 rounded-lg text-sm focus:border-blue-500 transition-colors duration-200 bg-white/80 backdrop-blur-sm"
                 >
                   <option value="name">Name</option>
                   <option value="price">Price</option>
@@ -175,8 +176,8 @@ export default function ShopPage() {
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-6">
-            <p className="text-lg text-muted-foreground">
-              <span className="font-semibold text-foreground">{filteredProducts.length}</span> product{filteredProducts.length !== 1 ? 's' : ''} found
+            <p className="text-lg text-gray-600">
+              <span className="font-semibold text-gray-900">{filteredProducts.length}</span> product{filteredProducts.length !== 1 ? 's' : ''} found
             </p>
             {state.readAloud && (
               <Button
@@ -186,7 +187,7 @@ export default function ShopPage() {
                   const summary = `Found ${filteredProducts.length} products. ${filteredProducts.slice(0, 3).map(p => p.name).join(', ')}`
                   speak(summary)
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-blue-200 text-blue-600 hover:bg-blue-50"
               >
                 <Sparkles className="h-4 w-4" />
                 Read Results
@@ -213,7 +214,16 @@ export default function ShopPage() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 layout
               >
-                <ProductCard product={product} />
+                <CardContainer className="inter-var">
+                  <CardBody className="bg-white/80 backdrop-blur-sm relative group/card hover:shadow-xl border-blue-200/50 w-full h-auto rounded-xl p-6 border shadow-sm hover:shadow-blue-200/20 transition-all duration-300">
+                    <CardItem
+                      translateZ="50"
+                      className="w-full"
+                    >
+                      <ProductCard product={product} />
+                    </CardItem>
+                  </CardBody>
+                </CardContainer>
               </motion.div>
             ))}
           </motion.div>
@@ -225,8 +235,8 @@ export default function ShopPage() {
             className="text-center py-16"
           >
             <div className="text-8xl mb-6">🔍</div>
-            <h3 className="text-2xl font-bold mb-4">No products found</h3>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">No products found</h3>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
               Try adjusting your search terms or filters to find what you're looking for
             </p>
             <Button
@@ -234,7 +244,7 @@ export default function ShopPage() {
                 setSearchQuery('')
                 setSelectedCategory('All')
               }}
-              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Clear Filters
             </Button>
@@ -255,7 +265,7 @@ export default function ShopPage() {
                 const summary = `Found ${filteredProducts.length} products. ${filteredProducts.slice(0, 3).map(p => p.name).join(', ')}`
                 speak(summary)
               }}
-              className="bg-background/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-white/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 border-blue-200 text-blue-600 hover:bg-blue-50"
             >
               <Sparkles className="h-4 w-4 mr-2" />
               Read Results
@@ -265,4 +275,4 @@ export default function ShopPage() {
       </div>
     </div>
   )
-} 
+}

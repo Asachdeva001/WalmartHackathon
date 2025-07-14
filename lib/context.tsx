@@ -20,6 +20,7 @@ type AppAction =
   | { type: 'CLEAR_CART' }
   | { type: 'TOGGLE_READ_ALOUD' }
   | { type: 'TOGGLE_DARK_MODE' }
+  | { type: 'SET_DARK_MODE'; payload: boolean }
   | { type: 'TOGGLE_AI_ASSISTANT' }
 
 const initialState: AppState = {
@@ -34,14 +35,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_USER':
       return { ...state, user: action.payload }
-    
+
     case 'ADD_TO_CART': {
       const { product, quantity, variant } = action.payload
-      const existingItem = state.cart.find(item => 
-        item.productId === product.id && 
+      const existingItem = state.cart.find(item =>
+        item.productId === product.id &&
         (!variant || item.selectedVariant?.id === variant.id)
       )
-      
       if (existingItem) {
         return {
           ...state,
@@ -62,13 +62,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
         return { ...state, cart: [...state.cart, newItem] }
       }
     }
-    
+
     case 'REMOVE_FROM_CART':
       return {
         ...state,
         cart: state.cart.filter(item => item.id !== action.payload)
       }
-    
+
     case 'UPDATE_CART_ITEM':
       return {
         ...state,
@@ -78,19 +78,22 @@ function appReducer(state: AppState, action: AppAction): AppState {
             : item
         )
       }
-    
+
     case 'CLEAR_CART':
       return { ...state, cart: [] }
-    
+
     case 'TOGGLE_READ_ALOUD':
       return { ...state, readAloud: !state.readAloud }
-    
+
     case 'TOGGLE_DARK_MODE':
       return { ...state, darkMode: !state.darkMode }
-    
+
+    case 'SET_DARK_MODE':
+      return { ...state, darkMode: action.payload }
+
     case 'TOGGLE_AI_ASSISTANT':
       return { ...state, aiAssistantOpen: !state.aiAssistantOpen }
-    
+
     default:
       return state
   }
@@ -106,34 +109,28 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
 
-  // Load user from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('user')
     if (savedUser) {
-      const user = JSON.parse(savedUser)
-      dispatch({ type: 'SET_USER', payload: user })
+      dispatch({ type: 'SET_USER', payload: JSON.parse(savedUser) })
     } else {
-      // Set demo user by default
       dispatch({ type: 'SET_USER', payload: sampleUsers[1] })
     }
   }, [])
 
-  // Load dark mode preference
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode')
     if (savedDarkMode !== null) {
-      dispatch({ type: 'TOGGLE_DARK_MODE' })
+      dispatch({ type: 'SET_DARK_MODE', payload: savedDarkMode === 'true' })
     }
   }, [])
 
-  // Save user to localStorage when it changes
   useEffect(() => {
     if (state.user) {
       localStorage.setItem('user', JSON.stringify(state.user))
     }
   }, [state.user])
 
-  // Apply dark mode to document
   useEffect(() => {
     if (state.darkMode) {
       document.documentElement.classList.add('dark')
@@ -152,8 +149,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
 export function useApp() {
   const context = useContext(AppContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useApp must be used within an AppProvider')
   }
   return context
-} 
+}

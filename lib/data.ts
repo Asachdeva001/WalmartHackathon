@@ -1,7 +1,8 @@
 import { Product, User, StoreCode } from './types'
-
 export const sampleProducts: Product[] = [
+  /* ---------- FRUITS ---------- */
   {
+
     "id": "1",
     "name": "Almond Milk",
     "description": "High quality almond milk perfect for daily use.",
@@ -1520,7 +1521,8 @@ export const sampleProducts: Product[] = [
     "rating": 3.9,
     "reviewCount": 148
   }
-]
+];
+
 
 export const sampleUsers: User[] = [
   {
