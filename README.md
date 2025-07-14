@@ -184,5 +184,12 @@ This is a hackathon project. For production use, please implement proper securit
 
 ---
 
+## Setup 
+--For frontend: npm i && npm run dev
+--For backend: python -m venv venv
+source venv/Scripts/activate
+pip install ultralytics flask opencv-python pillow numpy flask-cors
+py server.py
+
 **Built with ❤️ for the Walmart Hackathon**
 # WalmartHackathon
