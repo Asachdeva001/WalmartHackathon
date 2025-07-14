@@ -30,7 +30,7 @@ You need to analyze the user's message and output a JSON object with two fields:
 
 Also you can check about product availability and prices in the provided list of products. the list is {json.dumps(listed_product)}
 Each action must have:
-- action: "add" or "remove"
+- type: "add" or "remove"
 - product: item name (singular form)
 - quantity: number
 
@@ -40,8 +40,8 @@ Output:
 {{
   "reply": "Sure, I’ve added 2 mangoes and 1 milk to your cart.",
   "actions": [
-    {{ "action": "add", "product": "mango", "quantity": 2 }},
-    {{ "action": "add", "product": "milk", "quantity": 1 }}
+    {{ "type": "add", "product": "mango", "quantity": 2 }},
+    {{ "type": "remove", "product": "milk", "quantity": 1 }}
   ]
 }}
 
