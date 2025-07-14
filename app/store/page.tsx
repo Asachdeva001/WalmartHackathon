@@ -9,6 +9,9 @@ import { sampleProducts, sampleStoreCodes } from '@/lib/data'
 import { useApp } from '@/lib/context'
 import { DetectedObject } from '@/lib/types'
 
+// Import COCO-SSD
+import * as cocoSsd from '@tensorflow-models/coco-ssd'
+
 export default function StorePage() {
   const { state } = useApp()
   const [step, setStep] = useState<'code' | 'camera' | 'detection' | 'product'>('code')
@@ -17,14 +20,130 @@ export default function StorePage() {
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([])
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isModelLoading, setIsModelLoading] = useState(false)
+  const [model, setModel] = useState<cocoSsd.ObjectDetection | null>(null)
+  const [isLiveDetection, setIsLiveDetection] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const speak = (text: string) => {
     if (!state.readAloud) return
     
     const utterance = new SpeechSynthesisUtterance(text)
     window.speechSynthesis.speak(utterance)
+  }
+
+  // Load COCO-SSD model
+  const loadModel = async () => {
+    try {
+      setIsModelLoading(true)
+      speak('Loading AI model for object detection.')
+      const loadedModel = await cocoSsd.load()
+      setModel(loadedModel)
+      speak('AI model loaded successfully.')
+    } catch (error) {
+      console.error('Error loading model:', error)
+      speak('Error loading AI model. Using demo mode.')
+    } finally {
+      setIsModelLoading(false)
+    }
+  }
+
+  // Map COCO-SSD classes to product names
+  const mapDetectionToProduct = (className: string): string => {
+    const productMap: { [key: string]: string } = {
+      'banana': 'Organic Bananas',
+      'apple': 'Red Apples',
+      'orange': 'Fresh Oranges',
+      'bottle': 'Water Bottle',
+      'cup': 'Coffee Cup',
+      'bowl': 'Ceramic Bowl',
+      'sandwich': 'Sandwich',
+      'pizza': 'Pizza',
+      'donut': 'Donut',
+      'cake': 'Cake',
+      'chair': 'Office Chair',
+      'book': 'Notebook',
+      'laptop': 'Laptop',
+      'mouse': 'Computer Mouse',
+      'keyboard': 'Keyboard',
+      'cell phone': 'Smartphone',
+      'microwave': 'Microwave',
+      'toaster': 'Toaster',
+      'refrigerator': 'Refrigerator',
+      'clock': 'Wall Clock'
+    }
+    
+    return productMap[className] || className
+  }
+
+  // Real-time object detection
+  const detectObjects = async () => {
+    if (!model || !videoRef.current || !videoRef.current.videoWidth) return
+
+    try {
+      const predictions = await model.detect(videoRef.current)
+      const validPredictions = predictions.filter(pred => pred.score > 0.5)
+      
+      // Always update detected objects array (even if empty)
+      const mappedObjects: DetectedObject[] = validPredictions.map((pred, index) => ({
+        id: `${pred.class}-${index}`,
+        name: mapDetectionToProduct(pred.class),
+        confidence: pred.score,
+        boundingBox: {
+          x: pred.bbox[0],
+          y: pred.bbox[1],
+          width: pred.bbox[2],
+          height: pred.bbox[3]
+        }
+      }))
+
+      setDetectedObjects(mappedObjects)
+      
+      // Optional: Automatic mode switching after stable detection
+      // Uncomment if you want automatic switching after object stays for 2 seconds
+      // if (mappedObjects.length === 1) {
+      //   setTimeout(() => {
+      //     if (detectedObjects.length === 1) {
+      //       const product = sampleProducts.find(p => p.name === mappedObjects[0].name)
+      //       if (product) {
+      //         setSelectedProduct(product)
+      //         setStep('product')
+      //         setIsLiveDetection(false)
+      //         speak(`Detected ${product.name}. Showing detailed information.`)
+      //       }
+      //     }
+      //   }, 2000)
+      // }
+      
+    } catch (error) {
+      console.error('Detection error:', error)
+    }
+  }
+
+  // Start live detection loop
+  const startLiveDetection = () => {
+    if (!model || !videoRef.current) return
+
+    setIsLiveDetection(true)
+    
+    const detectLoop = () => {
+      if (isLiveDetection && videoRef.current?.readyState === 4) {
+        detectObjects()
+      }
+    }
+
+    detectionIntervalRef.current = setInterval(detectLoop, 200) // Run every 200ms
+  }
+
+  // Stop live detection
+  const stopLiveDetection = () => {
+    setIsLiveDetection(false)
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current)
+      detectionIntervalRef.current = null
+    }
   }
 
   const handleStoreCodeSubmit = () => {
@@ -40,13 +159,18 @@ export default function StorePage() {
 
   const startCamera = async () => {
     try {
+      // Load model first if not loaded
+      if (!model) {
+        await loadModel()
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment' } 
       })
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         setIsCameraActive(true)
-        speak('Camera activated. Point at products to identify them.')
+        speak('Camera activated. Point at objects to identify them.')
       }
     } catch (error) {
       console.error('Error accessing camera:', error)
@@ -112,18 +236,26 @@ export default function StorePage() {
   }
 
   const captureImage = () => {
-    if (canvasRef.current && videoRef.current) {
-      const canvas = canvasRef.current
-      const video = videoRef.current
-      const context = canvas.getContext('2d')
-      
-      if (context) {
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        context.drawImage(video, 0, 0)
+    if (model && videoRef.current) {
+      // Start live detection instead of one-time capture
+      setIsProcessing(false) // Don't show processing spinner
+      speak('Starting live object detection.')
+      startLiveDetection()
+    } else {
+      // Fallback to simulation if model not loaded
+      if (canvasRef.current && videoRef.current) {
+        const canvas = canvasRef.current
+        const video = videoRef.current
+        const context = canvas.getContext('2d')
         
-        // Simulate AI processing
-        simulateObjectDetection()
+        if (context) {
+          canvas.width = video.videoWidth
+          canvas.height = video.videoHeight
+          context.drawImage(video, 0, 0)
+          
+          // Simulate AI processing
+          simulateObjectDetection()
+        }
       }
     }
   }
@@ -134,11 +266,16 @@ export default function StorePage() {
       stream.getTracks().forEach(track => track.stop())
     }
     setIsCameraActive(false)
+    stopLiveDetection()
   }
 
+  // Load model on component mount
   useEffect(() => {
+    loadModel()
+    
     return () => {
       stopCamera()
+      stopLiveDetection()
     }
   }, [])
 
@@ -190,14 +327,15 @@ export default function StorePage() {
               <Button 
                 onClick={handleStoreCodeSubmit}
                 className="w-full"
-                disabled={!storeCode}
+                disabled={!storeCode || isModelLoading}
               >
                 <Check className="h-4 w-4 mr-2" />
-                Enter Store
+                {isModelLoading ? 'Loading AI Model...' : 'Enter Store'}
               </Button>
               
               <div className="text-center text-sm text-muted-foreground">
                 <p>Demo codes: 1234, 5678</p>
+                {isModelLoading && <p>AI model loading in background...</p>}
               </div>
             </CardContent>
           </Card>
@@ -242,22 +380,83 @@ export default function StorePage() {
                   </div>
                 )}
                 
+                {/* Live detection overlay */}
+                {isLiveDetection && (
+                  <div className="absolute top-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-lg text-sm">
+                    🔴 Live Detection Active
+                  </div>
+                )}
+                
+                {/* Dynamic detection results overlay */}
+                {isLiveDetection && detectedObjects.length > 0 && (
+                  <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Detected Objects:</h3>
+                    <div className="space-y-1">
+                      {detectedObjects.map((object) => (
+                        <div key={object.id} className="flex justify-between items-center text-sm">
+                          <span>{object.name}</span>
+                          <span className="text-green-400">{Math.round(object.confidence * 100)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-xs text-gray-300">
+                      Click "Select Object" to view details
+                    </div>
+                  </div>
+                )}
+                
+                {/* No objects detected overlay */}
+                {isLiveDetection && detectedObjects.length === 0 && (
+                  <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white p-3 rounded-lg text-center">
+                    <span className="text-sm">No objects detected - point camera at objects</span>
+                  </div>
+                )}
+                
                 <canvas ref={canvasRef} className="hidden" />
                 
-                <div className="mt-4 flex justify-center">
+                <div className="mt-4 flex justify-center space-x-2">
                   <Button
                     onClick={isCameraActive ? captureImage : startCamera}
-                    className="w-full"
+                    className="flex-1"
+                    disabled={isModelLoading}
                   >
                     <Camera className="h-4 w-4 mr-2" />
-                    {isCameraActive ? 'Capture & Detect' : 'Start Camera'}
+                    {isModelLoading 
+                      ? 'Loading AI Model...' 
+                      : isCameraActive 
+                        ? (isLiveDetection ? 'Stop Detection' : 'Start Detection') 
+                        : 'Start Camera'
+                    }
                   </Button>
+                  
+                  {isLiveDetection && (
+                    <Button
+                      onClick={stopLiveDetection}
+                      variant="outline"
+                    >
+                      Stop Live Detection
+                    </Button>
+                  )}
+                  
+                  {isLiveDetection && detectedObjects.length > 0 && (
+                    <Button
+                      onClick={() => {
+                        setStep('detection')
+                        setIsLiveDetection(false)
+                      }}
+                      variant="default"
+                    >
+                      Select Object
+                    </Button>
+                  )}
                 </div>
                 
-                {isProcessing && (
+                {(isProcessing || isModelLoading) && (
                   <div className="mt-4 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                    <p className="text-sm text-muted-foreground">Processing image...</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isModelLoading ? 'Loading AI model...' : 'Processing image...'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -359,7 +558,7 @@ export default function StorePage() {
                   <div>
                     <h3 className="font-semibold mb-2">Available Options:</h3>
                     <div className="space-y-2">
-                      {selectedProduct.variants.map((variant) => (
+                      {selectedProduct.variants.map((variant: any) => (
                         <div
                           key={variant.id}
                           className="flex justify-between items-center p-2 border rounded"
@@ -393,4 +592,4 @@ export default function StorePage() {
       )}
     </div>
   )
-} 
+}
