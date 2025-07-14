@@ -5,16 +5,16 @@ import { AppProvider } from "@/lib/context";
 import { Header } from "@/components/Header";
 import { AIAssistant } from "@/components/AIAssistant";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 export const metadata: Metadata = {
   title: "SmartMart - AI-Powered E-Commerce",
   description: "AI-powered e-commerce platform with in-store experience and voice assistant",
