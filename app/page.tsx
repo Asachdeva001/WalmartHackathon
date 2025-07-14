@@ -106,7 +106,7 @@ const images = [
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
+      {/* <section className="relative py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="container mx-auto text-center relative z-10">
           <motion.div 
@@ -174,7 +174,47 @@ const images = [
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
+
+       <section className="relative w-full min-h-[100vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <ThreeDMarquee
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          images={images}
+        />
+        <div className="absolute inset-0 bg-black/60 dark:bg-black/40" />
+      </div>
+      <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 py-24">
+        <h2 className="mx-auto max-w-4xl text-center text-2xl font-bold text-balance text-white md:text-4xl lg:text-6xl">
+          Shopping made effortless and intelligent with{" "}
+          <span className="inline-block rounded-xl bg-blue-500/40 px-4 py-1 text-white underline decoration-sky-500 decoration-[6px] underline-offset-[16px] backdrop-blur-sm">
+            SmartCart
+          </span>{" "}
+          technology.
+        </h2>
+        <p className="mx-auto max-w-2xl py-8 text-center text-sm text-neutral-200 md:text-base">
+          Experience the future of shopping with voice-activated cart management and AI-powered object detection. Simply speak to add items to your cart, or get instant product descriptions and assistance while shopping in-store.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <button className="rounded-md bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-8 py-4 text-lg font-medium text-white transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Start Shopping
+            <ArrowRight className="h-4 w-4" />
+          </button>
+          <button className="rounded-md border-2 border-white/30 bg-white/10 hover:bg-white/20 px-8 py-4 text-lg font-medium text-white backdrop-blur-sm transition-all duration-300 flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            Try In-Store
+          </button>
+        </div>
+        
+        {/* Tagline */}
+        <div className="mt-8 text-center">
+          <p className="text-blue-200 text-sm font-medium tracking-wide">
+            "Shop Smart, Shop Easy - Voice Meets Vision"
+          </p>
+        </div>
+      </div>
+    </section>
 
       {/* Features Section with 3D Cards */}
       <section className="py-20 px-4 bg-gradient-to-b from-blue-50 to-white">
@@ -274,93 +314,91 @@ const images = [
         </div>
       </section>
 
-      {/* Demo Section with 3D Cards */}
-      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-white">
-        <div className="container mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-6 py-3 rounded-full text-sm font-medium mb-6 shadow-sm">
-              <Sparkles className="h-4 w-4" />
-              Try Our Demo
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-8 text-gray-900">
-              Experience the Future
-            </h2>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                emoji: "🛍️",
-                title: "Online Shopping",
-                description: "Browse our product catalog with AI-powered search and intelligent recommendations",
-                href: "/shop",
-                buttonText: "Explore Products",
-                bgClass: "from-blue-50 to-blue-100"
-              },
-              {
-                emoji: "📱",
-                title: "In-Store Experience",
-                description: "Use your camera to identify products and get instant information",
-                href: "/store",
-                buttonText: "Try Camera",
-                bgClass: "from-blue-100 to-blue-200"
-              },
-              {
-                emoji: "🤖",
-                title: "AI Assistant",
-                description: "Chat with our AI assistant for help with shopping decisions",
-                href: "#",
-                buttonText: "Open Assistant",
-                bgClass: "from-blue-200 to-blue-300"
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <CardContainer className="inter-var">
-                  <CardBody className={`bg-gradient-to-br ${item.bgClass} relative group/card dark:hover:shadow-2xl dark:hover:shadow-blue-500/[0.1] dark:bg-blue-50 dark:border-blue-200/20 border-blue-200/50 w-auto sm:w-[30rem] h-auto rounded-xl p-8 border shadow-sm hover:shadow-lg transition-all duration-300`}>
-                    <CardItem translateZ="50" className="text-6xl mb-6">
-                      {item.emoji}
-                    </CardItem>
-                    <CardItem
-                      as="h3"
-                      translateZ="60"
-                      className="text-2xl font-bold text-gray-900 mb-4"
-                    >
-                      {item.title}
-                    </CardItem>
-                    <CardItem
-                      as="p"
-                      translateZ="60"
-                      className="text-gray-600 mb-6 leading-relaxed"
-                    >
-                      {item.description}
-                    </CardItem>
-                    <CardItem translateZ="100">
-                      <Link href={item.href}>
-                        <Button className={`w-full bg-gradient-to-r from-blue-${600 + index * 100} to-blue-${700 + index * 100} hover:from-blue-${700 + index * 100} hover:to-blue-${800 + index * 100} text-white shadow-lg hover:shadow-xl transition-all duration-300`}>
-                          {item.buttonText}
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </CardItem>
-                  </CardBody>
-                </CardContainer>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Demo Section with 3D Cards - Full Width & Height */}
+<section className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-0 py-20">
+  <div className="w-full max-w-none px-4 md:px-12 lg:px-20">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="mb-16 text-center"
+    >
+      <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-6 py-3 rounded-full text-sm font-medium mb-6 shadow-sm">
+        <Sparkles className="h-4 w-4" />
+        Try Smart Mart
+      </div>
+      <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900">
+        Explore the Future of Shopping
+      </h2>
+      <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+        Smart Mart brings you next-gen product discovery, in-store AI assistance, and intelligent search.
+      </p>
+    </motion.div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-full mx-auto">
+      {[
+        {
+          image: "https://cdn.pixabay.com/photo/2016/11/29/10/07/online-1869204_1280.jpg",
+          title: "Online Shopping",
+          description: "Browse thousands of products with personalized suggestions powered by AI.",
+          href: "/shop",
+          buttonText: "Explore Products",
+          gradient: "from-blue-100 to-blue-200",
+        },
+        {
+          image: "https://cdn.pixabay.com/photo/2015/09/05/21/51/aisle-924937_1280.jpg",
+          title: "In-Store Experience",
+          description: "Scan products with your phone and get instant info, offers, and reviews.",
+          href: "/store",
+          buttonText: "Try Camera",
+          gradient: "from-blue-200 to-blue-300",
+        },
+        {
+          image: "https://cdn.pixabay.com/photo/2023/07/04/12/15/chatbot-8107462_1280.jpg",
+          title: "AI Assistant",
+          description: "Get help with shopping queries instantly with our Smart Mart AI Assistant.",
+          href: "#",
+          buttonText: "Open Assistant",
+          gradient: "from-blue-300 to-blue-400",
+        },
+      ].map((item, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: index * 0.1 }}
+          viewport={{ once: true }}
+          className="h-full flex"
+        >
+          <CardContainer className="inter-var w-full">
+            <CardBody className={`bg-gradient-to-br ${item.gradient} relative group/card dark:hover:shadow-2xl dark:hover:shadow-blue-500/[0.1] dark:bg-blue-50 dark:border-blue-200/20 border-blue-200/50 w-full h-full rounded-xl p-8 border shadow-md hover:shadow-lg transition-all duration-300 flex flex-col`}>
+              <CardItem translateZ="50" className="mb-6 flex justify-center">
+                <img src={item.image} alt={item.title} className="w-36 h-36 object-cover rounded-xl shadow-lg" />
+              </CardItem>
+              <CardItem as="h3" translateZ="60" className="text-2xl font-bold text-gray-900 mb-4">
+                {item.title}
+              </CardItem>
+              <CardItem as="p" translateZ="60" className="text-gray-600 mb-6 leading-relaxed">
+                {item.description}
+              </CardItem>
+              <CardItem translateZ="100" className="mt-auto">
+                <Link href={item.href}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-xl transition-all duration-300">
+                    {item.buttonText}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardItem>
+            </CardBody>
+          </CardContainer>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
 
       {/* CTA Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-blue-100 to-blue-200">
