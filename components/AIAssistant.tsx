@@ -95,7 +95,7 @@ export function AIAssistant() {
     setInputValue('')
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/voice-command', {
+      const res = await fetch('http://127.0.0.1:8000/voice-command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: userMsg.content, products: sampleProducts }),
@@ -152,7 +152,7 @@ export function AIAssistant() {
       setMessages(m => [...m, userMsg])
       // reuse handleSendMessage logic
       try {
-        const res = await fetch('http://127.0.0.1:5000/voice-command', {
+        const res = await fetch('http://127.0.0.1:8000/voice-command', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ command: text, products: sampleProducts }),

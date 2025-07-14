@@ -138,9 +138,10 @@ export default function YOLOv8StorePage() {
     if (modelStatus !== 'ready' || !videoRef.current || !videoRef.current.videoWidth) return
 
     try {
+      speak('Detecting objects...')
       const base64Image = captureFrameAsBase64()
       if (!base64Image) return
-
+      speak('Sending image to API...')
       const response = await fetch(`${yoloApiUrl}/detect`, {
         method: 'POST',
         headers: {
@@ -151,12 +152,13 @@ export default function YOLOv8StorePage() {
           confidence: 0.5
         })
       })
-
+      speak('API response received...')
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`)
       }
 
       const result = await response.json()
+              
       
       if (result.success && result.results) {
         const mappedObjects: DetectedObject[] = result.results.detections.map((detection: any) => ({
@@ -184,6 +186,10 @@ export default function YOLOv8StorePage() {
     }
   }
 
+  function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
   // Start live detection loop
   const startLiveDetection = () => {
     if (modelStatus !== 'ready' || !videoRef.current) {
@@ -196,10 +202,13 @@ export default function YOLOv8StorePage() {
     speak('Starting live object detection.')
     
     const detectLoop = () => {
-      if (isLiveDetection && videoRef.current?.readyState === 4) {
-        detectObjectsYOLOv8()
-      }
+      // if (isLiveDetection && videoRef.current?.readyState === 4) {
+      //   detectObjects()
+      // }
+
     }
+
+
 
     detectionIntervalRef.current = setInterval(detectLoop, 500) // Run every 500ms for API calls
   }
