@@ -907,7 +907,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality pineapple perfect for daily use.",
     "price": 6.49,
     "originalPrice": 24.22,
-    "image": "/images/pineapple.jpeg",
+    "image": "/images/pineapple.jpg",
     "category": "Fruits",
     "tags": [
       "fresh",
@@ -938,7 +938,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality cream cheese perfect for daily use.",
     "price": 13.5,
     "originalPrice": 50,
-    "image": "/images/cream_cheese.jpeg",
+    "image": "/images/cream_cheese.jpg",
     "category": "Dairy",
     "tags": [
       "calcium",
@@ -969,7 +969,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality tomatoes perfect for daily use.",
     "price": 7.96,
     "originalPrice": 50,
-    "image": "/images/tomatoes.jpeg",
+    "image": "/images/tomatoes.jpg",
     "category": "Vegetables",
     "tags": [
       "crunchy",
@@ -1000,7 +1000,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality bacon perfect for daily use.",
     "price": 6.18,
     "originalPrice": 50,
-    "image": "/images/bacon.jpeg",
+    "image": "/images/bacon.jpg",
     "category": "Meat",
     "tags": [
       "protein",
@@ -1031,7 +1031,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality sugar perfect for daily use.",
     "price": 11.64,
     "originalPrice": 50,
-    "image": "/images/sugar.jpeg",
+    "image": "/images/sugar.jpg",
     "category": "Pantry",
     "tags": [
       "dry",
@@ -1062,7 +1062,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality iced tea perfect for daily use.",
     "price": 19.67,
     "originalPrice": 50,
-    "image": "/images/iced_tea.jpeg",
+    "image": "/images/iced_tea.jpg",
     "category": "Beverages",
     "tags": [
       "refreshing",
@@ -1093,7 +1093,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality peaches perfect for daily use.",
     "price": 9.74,
     "originalPrice": 50,
-    "image": "/images/peaches.jpeg",
+    "image": "/images/peaches.jpg",
     "category": "Fruits",
     "tags": [
       "fresh",
@@ -1124,7 +1124,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality eggs perfect for daily use.",
     "price": 18.82,
     "originalPrice": 50,
-    "image": "/images/eggs.jpeg",
+    "image": "/images/eggs.jpg",
     "category": "Dairy",
     "tags": [
       "calcium",
@@ -1155,7 +1155,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality onions perfect for daily use.",
     "price": 18.92,
     "originalPrice": 50,
-    "image": "/images/onions.jpeg",
+    "image": "/images/onions.jpg",
     "category": "Vegetables",
     "tags": [
       "crunchy",
@@ -1186,7 +1186,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality sausage perfect for daily use.",
     "price": 14.35,
     "originalPrice": 24.13,
-    "image": "/images/sausage.jpeg",
+    "image": "/images/sausage.jpg",
     "category": "Meat",
     "tags": [
       "protein",
@@ -1217,7 +1217,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality salt perfect for daily use.",
     "price": 4.81,
     "originalPrice": 50,
-    "image": "/images/salt.jpeg",
+    "image": "/images/salt.jpg",
     "category": "Pantry",
     "tags": [
       "dry",
@@ -1248,7 +1248,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality energy drink perfect for daily use.",
     "price": 3.74,
     "originalPrice": 21.65,
-    "image": "/images/energy_drink.jpeg",
+    "image": "/images/energy_drink.jpg",
     "category": "Beverages",
     "tags": [
       "refreshing",
@@ -1279,7 +1279,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality watermelon perfect for daily use.",
     "price": 15.55,
     "originalPrice": 50,
-    "image": "/images/watermelon.jpeg",
+    "image": "/images/watermelon.jpg",
     "category": "Fruits",
     "tags": [
       "fresh",
@@ -1310,7 +1310,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality whipped cream perfect for daily use.",
     "price": 18.52,
     "originalPrice": 24.92,
-    "image": "/images/whipped_cream.jpeg",
+    "image": "/images/whipped_cream.jpg",
     "category": "Dairy",
     "tags": [
       "calcium",
@@ -1341,7 +1341,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality bell peppers perfect for daily use.",
     "price": 7.87,
     "originalPrice": 50,
-    "image": "/images/bell_peppers.jpeg",
+    "image": "/images/bell_peppers.jpg",
     "category": "Vegetables",
     "tags": [
       "crunchy",
@@ -1372,7 +1372,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality chicken wings perfect for daily use.",
     "price": 17.18,
     "originalPrice": 50,
-    "image": "/images/chicken_wings.jpeg",
+    "image": "/images/chicken_wings.jpg",
     "category": "Meat",
     "tags": [
       "protein",
@@ -1403,7 +1403,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality canned beans perfect for daily use.",
     "price": 13.93,
     "originalPrice": 21.12,
-    "image": "/images/canned_beans.jpeg",
+    "image": "/images/canned_beans.jpg",
     "category": "Pantry",
     "tags": [
       "dry",
@@ -1434,7 +1434,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality smoothie perfect for daily use.",
     "price": 7.86,
     "originalPrice": 21.75,
-    "image": "/images/smoothie.jpeg",
+    "image": "/images/smoothie.jpg",
     "category": "Beverages",
     "tags": [
       "refreshing",
@@ -1465,7 +1465,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality cherries perfect for daily use.",
     "price": 7.62,
     "originalPrice": 50,
-    "image": "/images/cherries.jpeg",
+    "image": "/images/cherries.jpg",
     "category": "Fruits",
     "tags": [
       "fresh",
@@ -1496,7 +1496,7 @@ export const sampleProducts: Product[] = [
     "description": "High quality mozzarella perfect for daily use.",
     "price": 15.47,
     "originalPrice": 23.46,
-    "image": "/images/mozzarella.jpeg",
+    "image": "/images/mozzarella.jpg",
     "category": "Dairy",
     "tags": [
       "calcium",
