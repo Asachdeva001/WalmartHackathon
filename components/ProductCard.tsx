@@ -8,6 +8,7 @@ import { Product } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import { useApp } from '@/lib/context'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 interface ProductCardProps {
   product: Product
@@ -65,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 animate={{ scale: isHovered ? 1.1 : 1 }}
                 transition={{ duration: 0.3 }}
               >
-                🛒
+                {product.image ? <Image src={product.image} alt={product.name} width={100} height={100} /> : <div className="text-6xl">🛒</div>}
               </motion.div>
             </div>
             
