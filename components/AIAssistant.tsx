@@ -4,10 +4,12 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Mic, MicOff, Volume2, VolumeX, Send, X, Bot, Sparkles } from 'lucide-react'
+import { Mic, MicOff, Volume2, Send, X, Bot, Sparkles } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { AIAssistantMessage } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { sampleProducts } from '@/lib/data'
+
 
 export function AIAssistant() {
   const { state, dispatch } = useApp()
@@ -15,7 +17,7 @@ export function AIAssistant() {
     {
       id: '1',
       type: 'assistant',
-      content: 'Hello! I\'m your AI shopping assistant. How can I help you today?',
+      content: "Hello! I'm your AI shopping assistant. How can I help you today?",
       timestamp: new Date()
     }
   ])
@@ -23,94 +25,171 @@ export function AIAssistant() {
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const speechRef = useRef<SpeechSynthesis | null>(null)
 
+  // Log readAloud changes
   useEffect(() => {
-    speechRef.current = window.speechSynthesis
-  }, [])
+    console.log('🔁 ReadAloud is now', state.readAloud)
+  }, [state.readAloud])
 
+  // Scroll on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const speak = (text: string) => {
-    if (!state.readAloud || !speechRef.current) return
+  // Ensure voices are loaded
+  useEffect(() => {
+    const handler = () => {
+      console.log('✅ Voices loaded:', window.speechSynthesis.getVoices())
+    }
+    window.speechSynthesis.onvoiceschanged = handler
+    handler()
+    return () => { window.speechSynthesis.onvoiceschanged = null }
+  }, [])
 
-    setIsSpeaking(true)
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.onend = () => setIsSpeaking(false)
-    utterance.onerror = () => setIsSpeaking(false)
-    speechRef.current.speak(utterance)
+  // Speak helper
+  const speak = (text: string) => {
+    // If you want to force-on during testing, comment out the next two lines:
+    if (!state.readAloud) return
+    if (!window.speechSynthesis) return
+
+    const synth = window.speechSynthesis
+
+    const attempt = () => {
+      const voices = synth.getVoices()
+      if (!voices.length) {
+        return setTimeout(attempt, 100)
+      }
+      const utt = new SpeechSynthesisUtterance(text)
+      // pick an English voice
+      const voice =
+        voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+        voices.find(v => v.lang.startsWith('en')) ||
+        voices[0]
+      if (voice) utt.voice = voice
+      utt.pitch = 1
+      utt.rate = 1
+      utt.volume = 1
+
+      utt.onstart = () => setIsSpeaking(true)
+      utt.onend = () => setIsSpeaking(false)
+      utt.onerror = () => setIsSpeaking(false)
+
+      synth.cancel()
+      synth.speak(utt)
+    }
+
+    setTimeout(attempt, 100)
   }
 
+  // Send text message
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
 
-    const userMessage: AIAssistantMessage = {
+    const userMsg: AIAssistantMessage = {
       id: Date.now().toString(),
       type: 'user',
       content: inputValue,
       timestamp: new Date()
     }
-
-    setMessages(prev => [...prev, userMessage])
+    setMessages(m => [...m, userMsg])
     setInputValue('')
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I can help you find products, compare prices, or answer questions about our inventory. What would you like to know?",
-        "Great question! Let me search our database for that information.",
-        "I found some relevant products that might interest you. Would you like me to show you the details?",
-        "That's a popular item! It's currently in stock and we have several options available.",
-        "I can help you with product recommendations, pricing information, or store locations. What else would you like to know?"
-      ]
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-      const assistantMessage: AIAssistantMessage = {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/voice-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: userMsg.content, products: sampleProducts }),
+      })
+      const data = await res.json()
+      const replyText = data.reply || "Sorry, I didn't get that."
+      const botMsg: AIAssistantMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: randomResponse,
+        content: replyText,
         timestamp: new Date()
       }
+      setMessages(m => [...m, botMsg])
+      speak(replyText)
 
-      setMessages(prev => [...prev, assistantMessage])
-      speak(randomResponse)
-    }, 1000)
+      if (Array.isArray(data.actions)) {
+        data.actions.forEach((act: any) => {
+          // dispatch({ type: 'CART_ACTION', payload: act })
+          console.log('🛒 Cart action:', act)
+        })
+      }
+    } catch (e) {
+      console.error('❌ send error', e)
+      const errMsg: AIAssistantMessage = {
+        id: (Date.now() + 2).toString(),
+        type: 'assistant',
+        content: 'Something went wrong.',
+        timestamp: new Date()
+      }
+      setMessages(m => [...m, errMsg])
+    }
   }
 
-  const startListening = () => {
+  // Voice-only flow
+  const startVoiceCommand = () => {
     if (!('webkitSpeechRecognition' in window)) {
-      alert('Speech recognition is not supported in this browser.')
+      alert('Speech recognition not supported')
       return
     }
-
     setIsListening(true)
-    const recognition = new (window as any).webkitSpeechRecognition()
-    recognition.continuous = false
-    recognition.interimResults = false
+    const rec = new (window as any).webkitSpeechRecognition()
+    rec.continuous = false
+    rec.interimResults = false
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
-      setInputValue(transcript)
+    rec.onresult = async (e: any) => {
+      const text = e.results[0][0].transcript
       setIsListening(false)
-    }
+      const userMsg: AIAssistantMessage = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: text,
+        timestamp: new Date()
+      }
+      setMessages(m => [...m, userMsg])
+      // reuse handleSendMessage logic
+      try {
+        const res = await fetch('http://127.0.0.1:5000/voice-command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: text, products: sampleProducts }),
+        })
+        const data = await res.json()
+        const replyText = data.reply || "Sorry, I didn't get that."
+        const botMsg: AIAssistantMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: replyText,
+          timestamp: new Date()
+        }
+        setMessages(m => [...m, botMsg])
+        console.log('🤖 AI reply:', replyText)
+        speak(replyText)
 
-    recognition.onerror = () => {
+        if (Array.isArray(data.actions)) {
+        data.actions.forEach((act: any) => {
+          // dispatch({ type: 'CART_ACTION', payload: act })
+          console.log('🛒 Cart action:', act)
+        })
+      }
+      } catch (e) {
+        console.error('❌ voice error', e)
+        speak('There was an error.')
+      }
+    }
+    rec.onerror = () => {
       setIsListening(false)
+      speak("Sorry, I couldn't hear you.")
     }
-
-    recognition.start()
-  }
-
-  const stopListening = () => {
-    setIsListening(false)
+    rec.start()
   }
 
   const toggleReadAloud = () => {
     dispatch({ type: 'TOGGLE_READ_ALOUD' })
   }
-
   const closeAssistant = () => {
     dispatch({ type: 'TOGGLE_AI_ASSISTANT' })
   }
@@ -119,124 +198,103 @@ export function AIAssistant() {
 
   return (
     <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-lg"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="w-full max-w-md mx-4 max-h-[80vh]"
+          className="w-full max-w-xl mx-2 max-h-[90vh]"
+          initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ duration: 0.2 }}
         >
-          <Card className="w-full h-full flex flex-col border-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-2xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-full">
-                  <Bot className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-semibold">AI Assistant</CardTitle>
-                  <p className="text-xs text-muted-foreground">Powered by SmartMart AI</p>
-                </div>
+          <Card className="flex flex-col bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+              <div className="flex items-center space-x-4">
+                <Bot className="h-7 w-7 text-white animate-pulse" />
+                <CardTitle className="text-white text-xl font-extrabold">SmartMart AI</CardTitle>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-2 bg-muted/50 px-3 py-1 rounded-full">
-                  <Volume2 className="h-4 w-4" />
-                  <Switch
-                    checked={state.readAloud}
-                    onCheckedChange={toggleReadAloud}
-                    className="scale-75"
+              <div className="flex items-center space-x-3">
+                <Volume2 className={`h-5 w-5 text-white transition ${state.readAloud ? 'scale-110' : 'opacity-60'}`} />
+                <Switch
+                  checked={state.readAloud}
+                  onCheckedChange={toggleReadAloud}
+                  className={`
+                    relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full transition-colors
+                    ${state.readAloud ? 'bg-blue-600' : 'bg-gray-300'}
+                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400
+                  `}
+                >
+                  <span
+                    className={`
+                      pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-lg transition-transform
+                      ${state.readAloud ? 'translate-x-6' : 'translate-x-1'}
+                    `}
                   />
-                </div>
-                <Button variant="ghost" size="icon" onClick={closeAssistant} className="hover:bg-red-500/10 hover:text-red-500">
-                  <X className="h-4 w-4" />
+                </Switch>
+
+                <Button variant="ghost" size="icon" onClick={closeAssistant} className="text-white hover:bg-red-600/30">
+                  <X className="h-6 w-6" />
                 </Button>
               </div>
             </CardHeader>
-            
-            <CardContent className="flex-1 flex flex-col space-y-4 p-4">
-              <div className="flex-1 overflow-y-auto space-y-4 max-h-64 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <AnimatePresence>
-                  {messages.map((message, index) => (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                          message.type === 'user'
-                            ? 'bg-gradient-to-r from-primary to-purple-600 text-primary-foreground'
-                            : 'bg-muted border'
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <p className="text-xs opacity-70 mt-2">
-                          {message.timestamp.toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+
+            <CardContent className="flex-1 flex flex-col gap-4 p-6 bg-white/70 overflow-hidden">
+              <div className="flex-1 overflow-y-auto space-y-4 pr-4 max-h-96">
+                {messages.map((m, i) => (
+                  <motion.div
+                    key={m.id}
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className={`flex ${m.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`${m.type === 'user' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-800'} max-w-[65%] px-5 py-3 rounded-2xl shadow-lg`}>
+                      <p className="text-base leading-relaxed">{m.content}</p>
+                      <p className="text-xs opacity-50 mt-1 text-right">{m.timestamp.toLocaleTimeString()}</p>
+                    </div>
+                  </motion.div>
+                ))}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="flex space-x-2">
-                <div className="flex-1 relative">
+              <div className="flex items-center space-x-3">
+                <div className="relative flex-1">
                   <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type your message..."
-                    className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-background"
+                    type="text" value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Ask or command..."
+                    className="w-full px-5 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-purple-500 transition"
                   />
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 hover:bg-primary/10"
-                    onClick={isListening ? stopListening : startListening}
+                    variant="ghost" size="icon"
+                    onClick={isListening ? () => setIsListening(false) : startVoiceCommand}
+                    className="absolute right-4 top-1/2 -translate-y-1/2"
                   >
-                    {isListening ? (
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 0.5, repeat: Infinity }}
-                      >
-                        <MicOff className="h-4 w-4 text-red-500" />
-                      </motion.div>
-                    ) : (
-                      <Mic className="h-4 w-4" />
-                    )}
+                    {isListening
+                      ? <MicOff className="h-5 w-5 text-red-500 animate-ping" />
+                      : <Mic className="h-5 w-5 text-purple-600 hover:text-purple-700" />}
                   </Button>
                 </div>
-                <Button 
-                  onClick={handleSendMessage} 
+
+                <Button
+                  onClick={handleSendMessage}
                   disabled={!inputValue.trim()}
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-full shadow-lg transition"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
+                </Button>
+
+                <Button
+                  variant="outline" size="icon"
+                  onClick={startVoiceCommand}
+                  className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                >
+                  <Sparkles className="h-6 w-6 animate-spin-slow" />
                 </Button>
               </div>
 
               {isSpeaking && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center space-x-2 text-sm text-muted-foreground"
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                  >
-                    <Volume2 className="h-4 w-4" />
-                  </motion.div>
-                  <span>Speaking...</span>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center space-x-2 mt-3 text-gray-700">
+                  <Volume2 className="h-5 w-5 text-purple-600 animate-pulse" />
+                  <span className="text-sm font-medium">Speaking...</span>
                 </motion.div>
               )}
             </CardContent>
@@ -245,4 +303,4 @@ export function AIAssistant() {
       </motion.div>
     </AnimatePresence>
   )
-} 
+}
